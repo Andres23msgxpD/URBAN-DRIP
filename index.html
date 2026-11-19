@@ -1185,6 +1185,7 @@
       display: flex;
       align-items: baseline;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .modal-usd-price {
@@ -1193,9 +1194,32 @@
       color: var(--text-primary);
     }
 
+    .modal-usd-old {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
     .modal-bs-price {
       font-size: 13px;
       color: var(--text-secondary);
+    }
+
+    .modal-wholesale-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      background-color: var(--accent-amber-bg);
+      border: 1px solid var(--accent-amber-border);
+      color: var(--accent-amber);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
     }
 
     .modal-desc {
@@ -1557,6 +1581,7 @@
       display: flex;
       align-items: baseline;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .cart-item-usd {
@@ -1565,9 +1590,109 @@
       color: var(--text-primary);
     }
 
+    .cart-item-old {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
     .cart-item-bs {
       font-size: 11px;
       color: var(--text-secondary);
+    }
+
+    .cart-item-wholesale-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--accent-amber);
+      background-color: var(--accent-amber-bg);
+      border: 1px solid var(--accent-amber-border);
+      padding: 1px 4px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Banner de escala mayorista dinámica en la bolsa */
+    .cart-wholesale-banner {
+      padding: 12px;
+      background-color: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cart-wholesale-banner.tier-active {
+      border-color: var(--accent-amber-border);
+      background-color: var(--accent-amber-bg);
+    }
+
+    .cart-wholesale-banner.tier-max {
+      border-color: rgba(34, 197, 94, 0.28);
+      background-color: rgba(34, 197, 94, 0.08);
+    }
+
+    .wholesale-banner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wholesale-banner-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .wholesale-banner-info .wholesale-icon {
+      color: var(--accent-amber);
+      flex-shrink: 0;
+    }
+
+    .cart-wholesale-banner.tier-max .wholesale-banner-info .wholesale-icon {
+      color: var(--whatsapp-color);
+    }
+
+    .wholesale-banner-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .wholesale-banner-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-amber);
+      white-space: nowrap;
+    }
+
+    .cart-wholesale-banner.tier-max .wholesale-banner-count {
+      color: var(--whatsapp-color);
+    }
+
+    .wholesale-progress-track {
+      width: 100%;
+      height: 4px;
+      background-color: var(--bg-surface);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .wholesale-progress-fill {
+      height: 100%;
+      background-color: var(--accent-amber);
+      border-radius: var(--radius-full);
+      transition: width var(--transition-smooth);
+    }
+
+    .cart-wholesale-banner.tier-max .wholesale-progress-fill {
+      background-color: var(--whatsapp-color);
     }
 
     .cart-qty-ctrls {
@@ -2395,9 +2520,9 @@
             <h2 class="modal-prod-title" id="modal-title">Nombre de la Prenda</h2>
           </div>
 
-          <div class="modal-prices-row">
-            <span class="modal-usd-price" id="modal-price-usd">$0.00</span>
-            <span class="modal-bs-price" id="modal-price-bs">Bs. 0,00</span>
+          <div class="modal-prices-row" id="modal-prices-row">
+            <span class="modal-usd-price tabular" id="modal-price-usd">$0.00</span>
+            <span class="modal-bs-price tabular" id="modal-price-bs">Bs. 0,00</span>
           </div>
 
           <p class="modal-desc" id="modal-desc">
@@ -2444,7 +2569,7 @@
           <div class="modal-action-row">
             <div class="quantity-stepper">
               <button class="step-btn" id="modal-qty-minus">-</button>
-              <input type="text" class="step-input-num" id="modal-qty-input" value="1" readonly>
+              <input type="number" class="step-input-num tabular" id="modal-qty-input" value="1" min="1" step="1">
               <button class="step-btn" id="modal-qty-plus">+</button>
             </div>
 
@@ -2556,6 +2681,9 @@
       </div>
 
       <div class="drawer-content-scroll">
+        <!-- Banner de escala mayorista dinámica -->
+        <div class="cart-wholesale-banner" id="cart-wholesale-banner" style="display: none;"></div>
+
         <!-- Lista de Items en Carrito -->
         <div class="cart-items-wrap" id="cart-items-container">
           <!-- Inyectado por JS -->
@@ -2755,22 +2883,30 @@
 
       <!-- Footer del Drawer con Totales y Botón de WhatsApp -->
       <div class="drawer-footer" id="drawer-footer-box">
+        <div class="summary-row" id="row-subtotal-regular" style="display: none;">
+          <span>Subtotal regular:</span>
+          <span id="drawer-subtotal-regular" class="tabular" style="text-decoration: line-through; color: var(--text-muted);">$0.00</span>
+        </div>
+        <div class="summary-row" id="row-wholesale-discount" style="display: none; color: var(--accent-amber);">
+          <span id="drawer-discount-label">Descuento mayorista (-25%):</span>
+          <span id="drawer-discount-usd" class="tabular" style="font-weight: 600;">-$0.00</span>
+        </div>
         <div class="summary-row">
-          <span>Subtotal prendas:</span>
-          <span id="drawer-subtotal-usd" style="font-weight: 600; color: var(--text-primary);">$0.00</span>
+          <span id="drawer-subtotal-label">Subtotal prendas:</span>
+          <span id="drawer-subtotal-usd" class="tabular" style="font-weight: 600; color: var(--text-primary);">$0.00</span>
         </div>
         <div class="summary-row">
           <span>Costo de despacho:</span>
-          <span id="drawer-shipping-usd" style="font-weight: 600; color: var(--text-primary);">$0.00</span>
+          <span id="drawer-shipping-usd" class="tabular" style="font-weight: 600; color: var(--text-primary);">$0.00</span>
         </div>
         <div class="summary-total-row">
           <div class="total-labels">
             <span class="total-title">Total final</span>
-            <span class="total-bcv-note" id="drawer-bcv-reference">Tasa BCV: Bs. 865,00</span>
+            <span class="total-bcv-note" id="drawer-bcv-reference">Tasa oficial BCV: Bs. 865,00</span>
           </div>
           <div class="total-values">
-            <div class="total-usd-amount" id="drawer-total-usd">$0.00</div>
-            <div class="total-bs-amount" id="drawer-total-bs">Bs. 0,00</div>
+            <div class="total-usd-amount tabular" id="drawer-total-usd">$0.00</div>
+            <div class="total-bs-amount tabular" id="drawer-total-bs">Bs. 0,00</div>
           </div>
         </div>
 
@@ -3328,22 +3464,60 @@
       btnElem.classList.add('active');
     }
 
+    /* ==========================================================================
+       6.1 REGLAS Y CÁLCULOS DE PRECIOS MAYORISTAS
+       ========================================================================== */
+    function getWholesaleDiscountRate(pieces) {
+      if (pieces >= 12) return 0.35;
+      if (pieces >= 6) return 0.25;
+      return 0.0;
+    }
+
+    function getCartTotalPieces() {
+      return STATE.cart.reduce((sum, item) => sum + (item.isCombo ? (item.comboQty * item.qty) : item.qty), 0);
+    }
+
     function updateModalPrices() {
       const prod = STATE.currentModalProduct;
       if (!prod) return;
 
       const isCombo = STATE.selectedModality === 'combo' && prod.hasCombo;
-      const unitPrice = isCombo ? (prod.comboPrice / prod.comboQty) : prod.priceUnit;
-      const totalUSD = (isCombo ? prod.comboPrice : prod.priceUnit) * STATE.selectedQty;
+      const comboQty = isCombo ? (prod.comboQty || 1) : 1;
+      const modalPieces = comboQty * STATE.selectedQty;
 
-      document.getElementById('modal-price-usd').textContent = formatUSD(totalUSD);
-      document.getElementById('modal-price-bs').textContent = formatBs(totalUSD);
+      // Unidades acumuladas (bolsa actual + selección del modal)
+      const cartPieces = getCartTotalPieces();
+      const effectivePieces = cartPieces + modalPieces;
+      const discountRate = getWholesaleDiscountRate(effectivePieces);
+
+      const baseUnitRegular = isCombo ? (prod.comboPrice / comboQty) : prod.priceUnit;
+      const baseTotalRegularUSD = (isCombo ? prod.comboPrice : prod.priceUnit) * STATE.selectedQty;
+
+      const discountedTotalUSD = baseTotalRegularUSD * (1 - discountRate);
+      const discountedUnitUSD = baseUnitRegular * (1 - discountRate);
+
+      const pricesRow = document.getElementById('modal-prices-row');
+      if (pricesRow) {
+        if (discountRate > 0) {
+          const discountPercent = Math.round(discountRate * 100);
+          pricesRow.innerHTML = `
+            <span class="modal-usd-price tabular">${formatUSD(discountedTotalUSD)}</span>
+            <span class="modal-usd-old tabular">${formatUSD(baseTotalRegularUSD)}</span>
+            <span class="modal-bs-price tabular">${formatBs(discountedTotalUSD)} <span style="text-decoration: line-through; color: var(--text-muted); font-size: 11px;">(${formatBs(baseTotalRegularUSD)})</span></span>
+            <span class="modal-wholesale-badge"><span class="status-dot"></span>Mayorista -${discountPercent}% aplicado</span>
+          `;
+        } else {
+          pricesRow.innerHTML = `
+            <span class="modal-usd-price tabular" id="modal-price-usd">${formatUSD(baseTotalRegularUSD)}</span>
+            <span class="modal-bs-price tabular" id="modal-price-bs">${formatBs(baseTotalRegularUSD)}</span>
+          `;
+        }
+      }
 
       const btnText = document.getElementById('modal-add-btn-text');
       if (btnText) {
-        btnText.textContent = isCombo ? 
-          `Agregar ${STATE.selectedQty} ${prod.comboLabel.split('(')[0].trim()}` : 
-          `Agregar a la bolsa (${formatUSD(totalUSD)})`;
+        const finalUSD = discountRate > 0 ? discountedTotalUSD : baseTotalRegularUSD;
+        btnText.textContent = `Agregar a la bolsa (${formatUSD(finalUSD)})`;
       }
     }
 
@@ -3361,8 +3535,8 @@
       if (!prod) return;
 
       const isCombo = STATE.selectedModality === 'combo' && prod.hasCombo;
-      const pricePerPiece = isCombo ? (prod.comboPrice / prod.comboQty) : prod.priceUnit;
-      const finalPrice = isCombo ? prod.comboPrice : prod.priceUnit;
+      const comboQty = isCombo ? (prod.comboQty || 1) : 1;
+      const regularPrice = isCombo ? prod.comboPrice : prod.priceUnit;
 
       const cartItem = {
         id: prod.id,
@@ -3371,8 +3545,10 @@
         color: STATE.selectedColor,
         size: STATE.selectedSize,
         isCombo: isCombo,
+        comboQty: comboQty,
         modalityLabel: isCombo ? prod.comboLabel.split('(')[0].trim() : 'Unidad individual',
-        price: finalPrice,
+        regularPrice: regularPrice,
+        price: regularPrice,
         qty: STATE.selectedQty
       };
 
@@ -3415,10 +3591,12 @@
 
     function updateCartUI() {
       const totalItemsCount = STATE.cart.reduce((sum, item) => sum + item.qty, 0);
+      const totalUnidades = getCartTotalPieces();
+      const discountRate = getWholesaleDiscountRate(totalUnidades);
 
       // Actualizar contadores
       document.getElementById('header-cart-count').textContent = totalItemsCount;
-      document.getElementById('drawer-total-count').textContent = totalItemsCount;
+      document.getElementById('drawer-total-count').textContent = `${totalUnidades} ${totalUnidades === 1 ? 'pz' : 'pzs'}`;
       document.getElementById('float-badge-count').textContent = totalItemsCount;
 
       // Floating Cart Bar
@@ -3433,8 +3611,10 @@
       const container = document.getElementById('cart-items-container');
       const checkoutForm = document.getElementById('checkout-form-section');
       const footerBox = document.getElementById('drawer-footer-box');
+      const wholesaleBanner = document.getElementById('cart-wholesale-banner');
 
       if (STATE.cart.length === 0) {
+        if (wholesaleBanner) wholesaleBanner.style.display = 'none';
         container.innerHTML = `
           <div class="cart-empty-state">
             <div class="empty-icon-wrap">
@@ -3450,8 +3630,78 @@
         checkoutForm.style.display = 'flex';
         footerBox.style.display = 'flex';
 
+        // Actualizar Banner Mayorista con barra de progreso de 4px
+        if (wholesaleBanner) {
+          wholesaleBanner.style.display = 'flex';
+          if (totalUnidades < 6) {
+            const needed = 6 - totalUnidades;
+            const progressPct = Math.round((totalUnidades / 6) * 100);
+            wholesaleBanner.className = 'cart-wholesale-banner';
+            wholesaleBanner.innerHTML = `
+              <div class="wholesale-banner-header">
+                <div class="wholesale-banner-info">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="wholesale-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                  <span class="wholesale-banner-text">Agrega ${needed} ${needed === 1 ? 'pieza más' : 'piezas más'} para activar -25% al mayor</span>
+                </div>
+                <span class="wholesale-banner-count tabular">${totalUnidades}/6 pzs</span>
+              </div>
+              <div class="wholesale-progress-track">
+                <div class="wholesale-progress-fill" style="width: ${progressPct}%;"></div>
+              </div>
+            `;
+          } else if (totalUnidades < 12) {
+            const needed = 12 - totalUnidades;
+            const progressPct = Math.round((totalUnidades / 12) * 100);
+            wholesaleBanner.className = 'cart-wholesale-banner tier-active';
+            wholesaleBanner.innerHTML = `
+              <div class="wholesale-banner-header">
+                <div class="wholesale-banner-info">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="wholesale-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                  <span class="wholesale-banner-text">Mayorista -25% activo · Agrega ${needed} ${needed === 1 ? 'pieza' : 'piezas'} para -35%</span>
+                </div>
+                <span class="wholesale-banner-count tabular">${totalUnidades}/12 pzs</span>
+              </div>
+              <div class="wholesale-progress-track">
+                <div class="wholesale-progress-fill" style="width: ${progressPct}%;"></div>
+              </div>
+            `;
+          } else {
+            wholesaleBanner.className = 'cart-wholesale-banner tier-max';
+            wholesaleBanner.innerHTML = `
+              <div class="wholesale-banner-header">
+                <div class="wholesale-banner-info">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="wholesale-icon"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span class="wholesale-banner-text">Mayorista -35% activo en todas las prendas</span>
+                </div>
+                <span class="wholesale-banner-count tabular">${totalUnidades} pzs</span>
+              </div>
+              <div class="wholesale-progress-track">
+                <div class="wholesale-progress-fill" style="width: 100%;"></div>
+              </div>
+            `;
+          }
+        }
+
+        // Renderizar items con precios dinámicos
         container.innerHTML = STATE.cart.map((item, idx) => {
-          const itemSubtotal = item.price * item.qty;
+          const regSub = item.regularPrice * item.qty;
+          const discSub = regSub * (1 - discountRate);
+          const itemPieces = item.isCombo ? (item.comboQty * item.qty) : item.qty;
+
+          const priceHtml = discountRate > 0 ? `
+            <div class="cart-item-price-row">
+              <span class="cart-item-usd tabular">${formatUSD(discSub)}</span>
+              <span class="cart-item-old tabular">${formatUSD(regSub)}</span>
+              <span class="cart-item-bs tabular">${formatBs(discSub)}</span>
+              <span class="cart-item-wholesale-tag">-${Math.round(discountRate * 100)}%</span>
+            </div>
+          ` : `
+            <div class="cart-item-price-row">
+              <span class="cart-item-usd tabular">${formatUSD(regSub)}</span>
+              <span class="cart-item-bs tabular">${formatBs(regSub)}</span>
+            </div>
+          `;
+
           return `
             <div class="cart-item-row">
               <div class="cart-item-thumb">
@@ -3464,14 +3714,11 @@
                   <span>·</span>
                   <span>Color: <strong>${item.color}</strong></span>
                 </div>
-                <div style="font-size: 11px; color: var(--text-secondary);">${item.modalityLabel}</div>
-                <div class="cart-item-price-row">
-                  <span class="cart-item-usd">${formatUSD(itemSubtotal)}</span>
-                  <span class="cart-item-bs">${formatBs(itemSubtotal)}</span>
-                </div>
+                <div style="font-size: 11px; color: var(--text-secondary);">${item.modalityLabel} (${itemPieces} ${itemPieces === 1 ? 'pz' : 'pzs'})</div>
+                ${priceHtml}
                 <div class="cart-qty-ctrls">
                   <button class="qty-tiny-btn" onclick="changeCartItemQty(${idx}, -1)">-</button>
-                  <span class="qty-tiny-val">${item.qty}</span>
+                  <span class="qty-tiny-val tabular">${item.qty}</span>
                   <button class="qty-tiny-btn" onclick="changeCartItemQty(${idx}, 1)">+</button>
                 </div>
               </div>
@@ -3487,15 +3734,40 @@
     }
 
     function updateDrawerTotals() {
-      const subtotalUSD = STATE.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-      let shippingCost = 0;
+      const totalUnidades = getCartTotalPieces();
+      const discountRate = getWholesaleDiscountRate(totalUnidades);
 
+      const regularSubtotalUSD = STATE.cart.reduce((sum, item) => sum + (item.regularPrice * item.qty), 0);
+      const savingsUSD = regularSubtotalUSD * discountRate;
+      const subtotalUSD = regularSubtotalUSD - savingsUSD;
+
+      let shippingCost = 0;
       if (STATE.deliveryMethod === 'delivery-express') {
         shippingCost = STATE.caracasZoneCost;
       }
 
       const totalUSD = subtotalUSD + shippingCost;
       const totalBs = totalUSD * STATE.bcvRate;
+
+      // Actualizar filas de descuento mayorista en footer
+      const rowRegular = document.getElementById('row-subtotal-regular');
+      const rowDiscount = document.getElementById('row-wholesale-discount');
+      const subtotalLabel = document.getElementById('drawer-subtotal-label');
+
+      if (rowRegular && rowDiscount) {
+        if (discountRate > 0) {
+          rowRegular.style.display = 'flex';
+          rowDiscount.style.display = 'flex';
+          document.getElementById('drawer-subtotal-regular').textContent = formatUSD(regularSubtotalUSD);
+          document.getElementById('drawer-discount-label').textContent = `Descuento mayorista (-${Math.round(discountRate * 100)}%):`;
+          document.getElementById('drawer-discount-usd').textContent = `-${formatUSD(savingsUSD)}`;
+          if (subtotalLabel) subtotalLabel.textContent = 'Subtotal mayorista:';
+        } else {
+          rowRegular.style.display = 'none';
+          rowDiscount.style.display = 'none';
+          if (subtotalLabel) subtotalLabel.textContent = 'Subtotal prendas:';
+        }
+      }
 
       // Actualizar textos en el drawer
       document.getElementById('drawer-subtotal-usd').textContent = formatUSD(subtotalUSD);
@@ -3667,16 +3939,43 @@
         paymentDetailText = `· Zelle USD\n  Titular: ${ref}`;
       }
 
-      // Totales
-      const subtotalUSD = STATE.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      // Totales y Descuento Mayorista
+      const totalUnidades = getCartTotalPieces();
+      const discountRate = getWholesaleDiscountRate(totalUnidades);
+      const regularSubtotalUSD = STATE.cart.reduce((sum, item) => sum + (item.regularPrice * item.qty), 0);
+      const savingsUSD = regularSubtotalUSD * discountRate;
+      const subtotalUSD = regularSubtotalUSD - savingsUSD;
       const totalUSD = subtotalUSD + shippingCost;
       const totalBs = totalUSD * STATE.bcvRate;
 
-      // Listado de Prendas
+      // Listado de Prendas con detalle de curva
       const itemsListText = STATE.cart.map((item, index) => {
-        const itemSub = item.price * item.qty;
-        return `${index + 1}. ${item.name}\n   Talla: ${item.size} · Color: ${item.color}\n   Modalidad: ${item.modalityLabel}\n   Cantidad: ${item.qty} · Subtotal: ${formatUSD(itemSub)} (${formatBs(itemSub)})`;
+        const itemPieces = item.isCombo ? (item.comboQty * item.qty) : item.qty;
+        const regSub = item.regularPrice * item.qty;
+        const discSub = regSub * (1 - discountRate);
+        const priceInfo = discountRate > 0
+          ? `Subtotal: ${formatUSD(discSub)} (Antes ${formatUSD(regSub)})`
+          : `Subtotal: ${formatUSD(regSub)} (${formatBs(regSub)})`;
+        return `${index + 1}. ${item.name}\n   Talla: ${item.size} · Color: ${item.color}\n   Modalidad: ${item.modalityLabel} (${itemPieces} pzs)\n   Cantidad: ${item.qty} · ${priceInfo}`;
       }).join('\n\n');
+
+      // Resumen de pago con desglose regular vs mayorista
+      let paymentSummaryText = '';
+      if (discountRate > 0) {
+        paymentSummaryText = `· Total piezas: ${totalUnidades} pzs (Curva mayorista)
+· Subtotal regular: ${formatUSD(regularSubtotalUSD)}
+· Descuento mayorista (-${Math.round(discountRate * 100)}%): -${formatUSD(savingsUSD)} (Ahorras ${formatUSD(savingsUSD)} / ${formatBs(savingsUSD)})
+· Subtotal con descuento: ${formatUSD(subtotalUSD)}
+· Costo despacho: ${shippingCost > 0 ? formatUSD(shippingCost) : '$0.00'}
+· TOTAL FINAL: ${formatUSD(totalUSD)} (o ${formatBs(totalUSD)})
+· Tasa oficial BCV: Bs. ${STATE.bcvRate.toFixed(2)} / USD`;
+      } else {
+        paymentSummaryText = `· Total piezas: ${totalUnidades} ${totalUnidades === 1 ? 'pz' : 'pzs'}
+· Subtotal: ${formatUSD(subtotalUSD)}
+· Costo despacho: ${shippingCost > 0 ? formatUSD(shippingCost) : '$0.00'}
+· TOTAL FINAL: ${formatUSD(totalUSD)} (o ${formatBs(totalUSD)})
+· Tasa oficial BCV: Bs. ${STATE.bcvRate.toFixed(2)} / USD`;
+      }
 
       // Armar Mensaje Final sobrio y estructurado
       const message = 
@@ -3692,10 +3991,7 @@ PRENDAS SELECCIONADAS:
 ${itemsListText}
 
 RESUMEN DE PAGO:
-· Subtotal: ${formatUSD(subtotalUSD)}
-· Despacho: ${shippingCost > 0 ? formatUSD(shippingCost) : '$0.00'}
-· TOTAL: ${formatUSD(totalUSD)} (o ${formatBs(totalUSD)})
-· Tasa oficial BCV: Bs. ${STATE.bcvRate.toFixed(2)} / USD
+${paymentSummaryText}
 
 MÉTODO DE PAGO:
 ${paymentDetailText}
@@ -3767,6 +4063,25 @@ Hola, acabo de generar mi orden desde el catálogo web. Quedo atento a la confir
       });
 
       // 4. Modal de Prenda: Cantidad y Eventos
+      const qtyInput = document.getElementById('modal-qty-input');
+      if (qtyInput) {
+        qtyInput.removeAttribute('readonly');
+        const handleQtyChange = (e) => {
+          let val = parseInt(e.target.value, 10);
+          if (isNaN(val) || val < 1) val = 1;
+          STATE.selectedQty = val;
+          updateModalPrices();
+        };
+        qtyInput.addEventListener('input', handleQtyChange);
+        qtyInput.addEventListener('change', (e) => {
+          let val = parseInt(e.target.value, 10);
+          if (isNaN(val) || val < 1) val = 1;
+          e.target.value = val;
+          STATE.selectedQty = val;
+          updateModalPrices();
+        });
+      }
+
       document.getElementById('modal-qty-minus').addEventListener('click', () => {
         if (STATE.selectedQty > 1) {
           STATE.selectedQty--;
